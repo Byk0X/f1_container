@@ -15,7 +15,12 @@ BASE_URL = "https://api.openf1.org/v1"
 
 
 def fetch_and_store(endpoint: str, collection_name: str):
-    url = f"{BASE_URL}/{endpoint}"
+    # Specjalne traktowanie endpointu 'drivers'
+    if endpoint == "drivers":
+        url = f"{BASE_URL}/{endpoint}?meeting_key=latest"
+    else:
+        url = f"{BASE_URL}/{endpoint}"
+
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -25,7 +30,7 @@ def fetch_and_store(endpoint: str, collection_name: str):
             logger.warning(f"Brak danych z endpointu {url}")
             return
 
-        # Filtrowanie unikalnych kierowców
+        # Filtrowanie unikalnych kierowców z ostatniego wyścigu
         if collection_name == "drivers":
             seen = set()
             unique_drivers = []
@@ -35,7 +40,7 @@ def fetch_and_store(endpoint: str, collection_name: str):
                     seen.add(identifier)
                     unique_drivers.append(driver)
             data = unique_drivers
-            logger.info(f"Przefiltrowano do {len(data)} unikalnych kierowców")
+            logger.info(f"Przefiltrowano do {len(data)} unikalnych kierowców z ostatniego wyścigu")
 
         db[collection_name].delete_many({})
         db[collection_name].insert_many(data)
@@ -45,28 +50,60 @@ def fetch_and_store(endpoint: str, collection_name: str):
         logger.error(f"Błąd przy pobieraniu danych z {url}: {e}")
 
 
-def fetch_results_for_recent_sessions():
+
+def fetch_f1_teams():
     try:
-        sessions = list(db.sessions.find({}, {"session_key": 1}).sort("session_key", -1))
-        for session in sessions:
-            session_key = session["session_key"]
-            url = f"{BASE_URL}/results?session_key={session_key}"
-            response = requests.get(url)
-            response.raise_for_status()
-            data = response.json()
-            if data:
-                db.results.delete_many({"session_key": session_key})
-                db.results.insert_many(data)
-                logger.info(f"Zapisano wyniki dla sesji {session_key}")
+        drivers = list(db["drivers"].find({}, {"team_name": 1}))
+        unique_teams = {}
+        for driver in drivers:
+            team_name = driver.get("team_name")
+            if team_name and team_name not in unique_teams:
+                unique_teams[team_name] = {"team_name": team_name}
+
+        if unique_teams:
+            db["teams"].delete_many({})
+            db["teams"].insert_many(list(unique_teams.values()))
+            logger.info(f"Zapisano {len(unique_teams)} unikalnych zespołów F1 na podstawie kierowców.")
+        else:
+            logger.warning("Nie znaleziono żadnych zespołów F1 do zapisania na podstawie kierowców.")
+
     except Exception as e:
-        logger.error(f"Błąd przy pobieraniu wyników sesji: {e}")
+        logger.error(f"Błąd przy pobieraniu zespołów F1 z kolekcji 'drivers': {e}")
+
+def fetch_and_store_2025_results():
+    url = "https://api.jolpi.ca/ergast/f1/2025/results.json?limit=1000000"
+    print("Pobieranie wszystkich danych z sezonu 2025...")
+    response = requests.get(url)
+    if response.status_code != 200:
+        print("Błąd pobierania danych.")
+        return
+
+    data = response.json()
+    races = data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
+    if not races:
+        print("Brak danych wyścigów.")
+        return
+
+    all_results = []
+
+    for race in races:
+        race_results = race.get("Results", [])
+        for result in race_results:
+            result["raceName"] = race["raceName"]
+            result["round"] = int(race["round"])
+            result["date"] = race["date"]
+            result["circuit"] = race["Circuit"]["circuitName"]
+            all_results.append(result)
+
+    db.results_2025.delete_many({})  # Wyczyść starą kolekcję
+    db.results_2025.insert_many(all_results)
+    print(f"Zapisano {len(all_results)} wyników do kolekcji 'results_2025'.")
 
 def init_database():
     logger.info("Rozpoczynam inicjalizację bazy danych...")
     fetch_and_store("drivers", "drivers")
-    # fetch_and_store("teams", "teams")
-    fetch_and_store("sessions", "sessions")
-    fetch_results_for_recent_sessions()
+    fetch_f1_teams()
+    fetch_and_store_2025_results()
     logger.info("Zakończono inicjalizację bazy danych.")
 
 init_database()

@@ -1,15 +1,16 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import logging
 import threading
 import time
 from datetime import datetime
 from init_db import init_database
-
+import requests
+from fastapi.responses import JSONResponse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -74,27 +75,19 @@ async def get_sessions():
         logger.error(f"Błąd podczas pobierania danych o sesjach: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/sessions/{session_key}/results", response_model=List[Dict[str, Any]])
-async def get_session_results(session_key: int):
+@app.get("/results_2025", response_class=JSONResponse)
+async def get_results_2025(round: Optional[int] = Query(None, description="Numer rundy")):
     try:
-        results = list(db.results.find({"session_key": session_key}, {'_id': 0}))
-        if not results:
-            # If there are no results in the database, download them from the API
-            try:
-                api_results = openf1.results.get_results(session_key=session_key)
-                if len(api_results) > 0:
-                    db.results.insert_many(api_results.to_dict('records'))
-                    results = list(db.results.find({"session_key": session_key}, {'_id': 0}))
-                    logger.info(f"Dodano brakujące wyniki dla sesji {session_key}")
-                else:
-                    return []
-            except Exception as e:
-                logger.error(f"Błąd podczas pobierania wyników z API dla sesji {session_key}: {e}")
-                return []
+        query = {}
+        if round is not None:
+            query["round"] = round
+
+        results = list(db.results_2025.find(query, {"_id": 0}))
         return results
+
     except Exception as e:
-        logger.error(f"Błąd podczas pobierania wyników sesji {session_key}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 @app.get("/drivers", response_model=List[Dict[str, Any]])
 async def get_drivers():

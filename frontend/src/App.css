@@ -1,38 +1,326 @@
-.App {
-  text-align: center;
+/* App.css - styl dla aplikacji F1 Data Explorer */
+
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap');
+
+:root {
+  --f1-red: #e10600;
+  --f1-dark: #15151e;
+  --f1-light: #f8f4f4;
+  --f1-gray: #38383f;
+  --f1-light-gray: #e2e2e2;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+body {
+  font-family: 'Titillium Web', sans-serif;
+  background-color: var(--f1-light);
+  color: var(--f1-dark);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.app {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  min-height: 100vh;
+}
+
+/* Header Styles */
+.app-header {
+  background-color: var(--f1-dark);
   color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.App-link {
-  color: #61dafb;
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.f1-logo {
+  background-color: var(--f1-red);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 4px;
+}
+
+.refresh-button {
+  background-color: var(--f1-red);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.refresh-button:hover {
+  background-color: #c10500;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: var(--f1-gray);
+  padding: 0 1rem;
+}
+
+.navbar ul {
+  display: flex;
+  list-style: none;
+}
+
+.navbar li {
+  margin-right: 0.5rem;
+}
+
+.navbar button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.navbar button:hover {
+  color: var(--f1-red);
+}
+
+.navbar li.active button {
+  color: var(--f1-red);
+}
+
+.navbar li.active button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background-color: var(--f1-red);
+}
+
+/* Content Area */
+.content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+h2 {
+  margin-bottom: 1.5rem;
+  color: var(--f1-dark);
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background-color: var(--f1-red);
+}
+
+/* Loading and Error States */
+.loading, .error, .no-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 1.2rem;
+  color: var(--f1-gray);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.error {
+  color: var(--f1-red);
+}
+
+/* Drivers Grid */
+.drivers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.driver-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.driver-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.driver-number {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.1);
+}
+
+.driver-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.team-name {
+  color: var(--f1-red);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.driver-country {
+  font-size: 0.9rem;
+  color: var(--f1-gray);
+}
+
+/* Teams Grid */
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.team-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.team-card h3 {
+  font-size: 1.2rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.team-card h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background-color: var(--f1-red);
+}
+
+/* Results 2025 */
+.filter-section {
+  margin-bottom: 1.5rem;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.filter-section label {
+  margin-right: 1rem;
+  font-weight: 600;
+}
+
+.filter-section select {
+  padding: 0.5rem;
+  border: 1px solid var(--f1-light-gray);
+  border-radius: 4px;
+  font-family: 'Titillium Web', sans-serif;
+}
+
+.results-table-container {
+  overflow-x: auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th {
+  background-color: var(--f1-red);
+  color: white;
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+}
+
+.results-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--f1-light-gray);
+}
+
+.results-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.race-date {
+  font-size: 0.8rem;
+  color: var(--f1-gray);
+  margin-top: 0.2rem;
+}
+
+.position-cell {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.driver-name {
+  font-weight: 600;
+}
+
+.driver-code {
+  font-size: 0.8rem;
+  color: var(--f1-gray);
+}
+
+.points-cell {
+  font-weight: 700;
+  color: var(--f1-red);
+}
+
+/* Footer */
+.app-footer {
+  background-color: var(--f1-dark);
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  margin-top: 2rem;
 }

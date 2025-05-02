@@ -20,7 +20,6 @@ function App() {
 
     let url = `${apiUrl}/${endpoint}`;
     
-    // Dodanie parametru round dla results_2025
     if (endpoint === "results_2025" && selectedRound) {
       url += `?round=${selectedRound}`;
     }
@@ -48,7 +47,6 @@ function App() {
       .then((res) => res.json())
       .then((data) => {
         alert(data.message);
-        // Po odświeżeniu, pobieramy ponownie dane aktywnego zakładki
         fetchData(activeTab);
       })
       .catch((err) => {
@@ -66,27 +64,27 @@ function App() {
       return <div className="error">{error}</div>;
     }
 
-    if (!data || data.length === 0) {
-      return <div className="no-data">Brak danych do wyświetlenia</div>;
-    }
-
     switch (activeTab) {
       case "drivers":
         return (
           <div className="drivers-container">
             <h2>Lista kierowców</h2>
-            <div className="drivers-grid">
-              {data.map((driver, index) => (
-                <div key={index} className="driver-card">
-                  <div className="driver-number">{driver.driver_number || "?"}</div>
-                  <h3>{driver.full_name || "Nieznany kierowca"}</h3>
-                  <p className="team-name">{driver.team_name || "Brak zespołu"}</p>
-                  {driver.country_code && (
-                    <p className="driver-country">Kraj: {driver.country_code}</p>
-                  )}
-                </div>
-              ))}
-            </div>
+            {data && data.length > 0 ? (
+              <div className="drivers-grid">
+                {data.map((driver, index) => (
+                  <div key={index} className="driver-card">
+                    <div className="driver-number">{driver.driver_number || "?"}</div>
+                    <h3>{driver.full_name || "Nieznany kierowca"}</h3>
+                    <p className="team-name">{driver.team_name || "Brak zespołu"}</p>
+                    {driver.country_code && (
+                      <p className="driver-country">Kraj: {driver.country_code}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-data">Brak danych o kierowcach do wyświetlenia</div>
+            )}
           </div>
         );
 
@@ -94,13 +92,17 @@ function App() {
         return (
           <div className="teams-container">
             <h2>Zespoły F1</h2>
-            <div className="teams-grid">
-              {data.map((team, index) => (
-                <div key={index} className="team-card">
-                  <h3>{team.team_name || "Nieznany zespół"}</h3>
-                </div>
-              ))}
-            </div>
+            {data && data.length > 0 ? (
+              <div className="teams-grid">
+                {data.map((team, index) => (
+                  <div key={index} className="team-card">
+                    <h3>{team.team_name || "Nieznany zespół"}</h3>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-data">Brak danych o zespołach do wyświetlenia</div>
+            )}
           </div>
         );
 
@@ -123,40 +125,46 @@ function App() {
               </select>
             </div>
             
-            <div className="results-table-container">
-              <table className="results-table">
-                <thead>
-                  <tr>
-                    <th>Wyścig</th>
-                    <th>Pozycja</th>
-                    <th>Kierowca</th>
-                    <th>Konstruktor</th>
-                    <th>Czas</th>
-                    <th>Status</th>
-                    <th>Punkty</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((result, index) => (
-                    <tr key={index}>
-                      <td>
-                        {result.raceName} (R{result.round})
-                        <div className="race-date">{result.date}</div>
-                      </td>
-                      <td className="position-cell">{result.position}</td>
-                      <td>
-                        <div className="driver-name">{result.Driver?.givenName} {result.Driver?.familyName}</div>
-                        <div className="driver-code">{result.Driver?.code}</div>
-                      </td>
-                      <td>{result.Constructor?.name}</td>
-                      <td>{result.Time?.time || '-'}</td>
-                      <td>{result.status}</td>
-                      <td className="points-cell">{result.points}</td>
+            {data && data.length > 0 ? (
+              <div className="results-table-container">
+                <table className="results-table">
+                  <thead>
+                    <tr>
+                      <th>Wyścig</th>
+                      <th>Pozycja</th>
+                      <th>Kierowca</th>
+                      <th>Konstruktor</th>
+                      <th>Czas</th>
+                      <th>Status</th>
+                      <th>Punkty</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {data.map((result, index) => (
+                      <tr key={index}>
+                        <td>
+                          {result.raceName} (R{result.round})
+                          <div className="race-date">{result.date}</div>
+                        </td>
+                        <td className="position-cell">{result.position}</td>
+                        <td>
+                          <div className="driver-name">{result.Driver?.givenName} {result.Driver?.familyName}</div>
+                          <div className="driver-code">{result.Driver?.code}</div>
+                        </td>
+                        <td>{result.Constructor?.name}</td>
+                        <td>{result.Time?.time || '-'}</td>
+                        <td>{result.status}</td>
+                        <td className="points-cell">{result.points}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="no-data">
+                Brak danych do wyświetlenia dla wybranej rundy
+              </div>
+            )}
           </div>
         );
 

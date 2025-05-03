@@ -99,6 +99,69 @@ def fetch_and_store_2025_results():
     db.results_2025.insert_many(all_results)
     print(f"Zapisano {len(all_results)} wyników do kolekcji 'results_2025'.")
 
+def fetch_and_store_qualifying_results():
+    url = "https://api.jolpi.ca/ergast/f1/2025/qualifying.json?limit=1000000"
+    print("Pobieranie wszystkich danych z sezonu 2025...")
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        print("Błąd pobierania danych.")
+        return
+    
+    data = response.json()
+    qualifications = data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
+    
+    if not qualifications:
+        print("Brak danych wyścigów.")
+        return
+    
+    all_results = []
+
+    for qualification in qualifications:
+        qualification_results = qualification.get("Results", [])
+        for result in qualification_results:
+            result["raceName"] = qualification["raceName"]
+            result["round"] = int(qualification["round"])
+            result["date"] = qualification["date"]
+            result["circuit"] = qualification["Circuit"]["circuitName"]
+            all_results.append(result)
+
+    db.qualifying_results.delete_many({})
+    db.qualifying_results.insert_many(all_results)
+    print(f"Zapisano {len(all_results)} wyników do kolekcji 'qualifying_results'.")
+    
+def fetch_and_store_sprint_results():
+    url = "https://api.jolpi.ca/ergast/f1/2025/sprint.json?limit=1000000"
+    print("Pobieranie wszystkich danych zjiraza 2025...")
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print("Błąd pobierania danych.")
+        return
+
+    data = response.json()
+    sprints = data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
+
+    if not sprints:
+        print("Brak danych wyścigów.")
+        return
+    
+    all_results = []
+
+    for sprint in sprints:
+        sprint_results = sprint.get("Results", [])
+        for result in sprint_results:
+            result["raceName"] = sprint["raceName"]
+            result["round"] = int(sprint["round"])
+            result["date"] = sprint["date"]
+            result["circuit"] = sprint["Circuit"]["circuitName"]
+            all_results.append(result)
+
+    db.sprint_results.delete_many({})
+    db.sprint_results.insert_many(all_results)
+    print(f"Zapisano {len(all_results)} wyników do kolekcji 'sprint_results'.")
+    
+
 def init_database():
     logger.info("Rozpoczynam inicjalizację bazy danych...")
     fetch_and_store("drivers", "drivers")

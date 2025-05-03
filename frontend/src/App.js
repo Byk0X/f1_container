@@ -192,7 +192,7 @@ function App() {
           <div className="chart-container">
             <h2>Punktacja kierowców</h2>
             <iframe
-              src="http://localhost:3000/d-solo/bekscsrvux4owc/driverpoints?orgId=1&from=1746273346193&to=1746294946193&timezone=browser&panelId=1&__feature.dashboardSceneSolo"
+              src="http://localhost:3000/d-solo/bekscsrvux4owc2/driverpoints1?orgId=1&from=1746278568531&to=1746300168531&timezone=browser&panelId=1&__feature.dashboardSceneSolohttp://localhost:3000/d-solo/bekscsrvux4owc2/driverpoints1?orgId=1&from=1746278711986&to=1746300311986&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo"
               width="900"
               height="400"
               frameborder="0"

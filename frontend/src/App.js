@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './App.css';
+import "./App.css";
 
 function App() {
   const [activeTab, setActiveTab] = useState("drivers");
@@ -11,7 +11,9 @@ function App() {
   const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
   useEffect(() => {
-    fetchData(activeTab);
+    if (activeTab !== "result_chart") {
+      fetchData(activeTab);
+    }
   }, [activeTab, selectedRound]);
 
   const fetchData = (endpoint) => {
@@ -19,7 +21,7 @@ function App() {
     setError(null);
 
     let url = `${apiUrl}/${endpoint}`;
-    
+
     if (endpoint === "results_2025" && selectedRound) {
       url += `?round=${selectedRound}`;
     }
@@ -73,17 +75,25 @@ function App() {
               <div className="drivers-grid">
                 {data.map((driver, index) => (
                   <div key={index} className="driver-card">
-                    <div className="driver-number">{driver.driver_number || "?"}</div>
+                    <div className="driver-number">
+                      {driver.driver_number || "?"}
+                    </div>
                     <h3>{driver.full_name || "Nieznany kierowca"}</h3>
-                    <p className="team-name">{driver.team_name || "Brak zespołu"}</p>
+                    <p className="team-name">
+                      {driver.team_name || "Brak zespołu"}
+                    </p>
                     {driver.country_code && (
-                      <p className="driver-country">Kraj: {driver.country_code}</p>
+                      <p className="driver-country">
+                        Kraj: {driver.country_code}
+                      </p>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="no-data">Brak danych o kierowcach do wyświetlenia</div>
+              <div className="no-data">
+                Brak danych o kierowcach do wyświetlenia
+              </div>
             )}
           </div>
         );
@@ -101,7 +111,9 @@ function App() {
                 ))}
               </div>
             ) : (
-              <div className="no-data">Brak danych o zespołach do wyświetlenia</div>
+              <div className="no-data">
+                Brak danych o zespołach do wyświetlenia
+              </div>
             )}
           </div>
         );
@@ -110,21 +122,23 @@ function App() {
         return (
           <div className="results-container">
             <h2>Wyniki sezonu 2025</h2>
-            
+
             <div className="filter-section">
               <label htmlFor="round-select">Wybierz rundę:</label>
-              <select 
-                id="round-select" 
-                value={selectedRound} 
+              <select
+                id="round-select"
+                value={selectedRound}
                 onChange={(e) => setSelectedRound(e.target.value)}
               >
                 <option value="">Wszystkie rundy</option>
                 {[...Array(23)].map((_, i) => (
-                  <option key={i+1} value={i+1}>Runda {i+1}</option>
+                  <option key={i + 1} value={i + 1}>
+                    Runda {i + 1}
+                  </option>
                 ))}
               </select>
             </div>
-            
+
             {data && data.length > 0 ? (
               <div className="results-table-container">
                 <table className="results-table">
@@ -148,11 +162,16 @@ function App() {
                         </td>
                         <td className="position-cell">{result.position}</td>
                         <td>
-                          <div className="driver-name">{result.Driver?.givenName} {result.Driver?.familyName}</div>
-                          <div className="driver-code">{result.Driver?.code}</div>
+                          <div className="driver-name">
+                            {result.Driver?.givenName}{" "}
+                            {result.Driver?.familyName}
+                          </div>
+                          <div className="driver-code">
+                            {result.Driver?.code}
+                          </div>
                         </td>
                         <td>{result.Constructor?.name}</td>
-                        <td>{result.Time?.time || '-'}</td>
+                        <td>{result.Time?.time || "-"}</td>
                         <td>{result.status}</td>
                         <td className="points-cell">{result.points}</td>
                       </tr>
@@ -165,6 +184,19 @@ function App() {
                 Brak danych do wyświetlenia dla wybranej rundy
               </div>
             )}
+          </div>
+        );
+
+      case "result_chart":
+        return (
+          <div className="chart-container">
+            <h2>Punktacja kierowców</h2>
+            <iframe
+              src="http://localhost:3000/d-solo/bekscsrvux4owc/driverpoints?orgId=1&from=1746273346193&to=1746294946193&timezone=browser&panelId=1&__feature.dashboardSceneSolo"
+              width="900"
+              height="400"
+              frameborder="0"
+            ></iframe>
           </div>
         );
 
@@ -193,17 +225,22 @@ function App() {
             <button onClick={() => setActiveTab("teams")}>Zespoły</button>
           </li>
           <li className={activeTab === "results_2025" ? "active" : ""}>
-            <button onClick={() => setActiveTab("results_2025")}>Wyniki 2025</button>
+            <button onClick={() => setActiveTab("results_2025")}>
+              Wyniki 2025
+            </button>
+          </li>
+          <li className={activeTab === "result_chart" ? "active" : ""}>
+            <button onClick={() => setActiveTab("result_chart")}>
+              Punkty kierowców
+            </button>
           </li>
         </ul>
       </nav>
 
-      <main className="content">
-        {renderContent()}
-      </main>
+      <main className="content">{renderContent()}</main>
 
       <footer className="app-footer">
-        <p>F1 Data API © 2025</p>
+        <p>Maciej Lencewicz 245860</p>
       </footer>
     </div>
   );

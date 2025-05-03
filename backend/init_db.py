@@ -95,7 +95,7 @@ def fetch_and_store_2025_results():
             result["circuit"] = race["Circuit"]["circuitName"]
             all_results.append(result)
 
-    db.results_2025.delete_many({})  # Wyczyść starą kolekcję
+    db.results_2025.delete_many({})
     db.results_2025.insert_many(all_results)
     print(f"Zapisano {len(all_results)} wyników do kolekcji 'results_2025'.")
 

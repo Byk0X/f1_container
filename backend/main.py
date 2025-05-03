@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 import logging
 import threading
 import time
+import json
 from datetime import datetime
 from init_db import init_database
 import requests
@@ -111,6 +112,13 @@ async def get_teams():
 async def manual_refresh(background_tasks: BackgroundTasks):
     background_tasks.add_task(refresh_data)
     return {"message": "Odświeżanie danych rozpoczęte w tle"}
+
+@app.get("/api/formula1/data")
+async def get_formula1_data(collection: str, limit: Optional[int] = 100):
+    client = MongoClient("mongodb://mongo:27017/")
+    db = client["formula1"]
+    data = list(db[collection].find({}, {"_id": 0}).limit(limit))
+    return data    
 
 if __name__ == "__main__":
     import uvicorn

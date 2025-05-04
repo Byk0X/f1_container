@@ -11,7 +11,10 @@ function App() {
   const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
   useEffect(() => {
-    if (activeTab !== "result_chart") {
+    if (
+      activeTab !== "drivers_standing" &&
+      activeTab !== "constructors_standing"
+    ) {
       fetchData(activeTab);
     }
   }, [activeTab, selectedRound]);
@@ -23,6 +26,14 @@ function App() {
     let url = `${apiUrl}/${endpoint}`;
 
     if (endpoint === "results_2025" && selectedRound) {
+      url += `?round=${selectedRound}`;
+    }
+
+    if (endpoint === "qualifying_results" && selectedRound) {
+      url += `?round=${selectedRound}`;
+    }
+
+    if (endpoint === "sprint_results" && selectedRound) {
       url += `?round=${selectedRound}`;
     }
 
@@ -121,7 +132,7 @@ function App() {
       case "results_2025":
         return (
           <div className="results-container">
-            <h2>Wyniki sezonu 2025</h2>
+            <h2>Wyniki wyścigów sezonu 2025</h2>
 
             <div className="filter-section">
               <label htmlFor="round-select">Wybierz rundę:</label>
@@ -187,12 +198,163 @@ function App() {
           </div>
         );
 
-      case "result_chart":
+      case "qualifying_results":
+        return (
+          <div className="results-container">
+            <h2>Wyniki kwalifikacji sezonu 2025</h2>
+
+            <div className="filter-section">
+              <label htmlFor="round-select">Wybierz rundę:</label>
+              <select
+                id="round-select"
+                value={selectedRound}
+                onChange={(e) => setSelectedRound(e.target.value)}
+              >
+                <option value="">Wszystkie rundy</option>
+                {[...Array(23)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Runda {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {data && data.length > 0 ? (
+              <div className="results-table-container">
+                <table className="results-table">
+                  <thead>
+                    <tr>
+                      <th>Wyścig</th>
+                      <th>Pozycja</th>
+                      <th>Kierowca</th>
+                      <th>Konstruktor</th>
+                      <th>Q1</th>
+                      <th>Q2</th>
+                      <th>Q3</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((result, index) => (
+                      <tr key={index}>
+                        <td>
+                          {result.raceName} (R{result.round})
+                          <div className="race-date">{result.date}</div>
+                        </td>
+                        <td className="position-cell">{result.position}</td>
+                        <td>
+                          <div className="driver-name">
+                            {result.Driver?.givenName}{" "}
+                            {result.Driver?.familyName}
+                          </div>
+                          <div className="driver-code">
+                            {result.Driver?.code}
+                          </div>
+                        </td>
+                        <td>{result.Constructor?.name}</td>
+                        <td>{result.Q1 || "-"}</td>
+                        <td>{result.Q2 || "-"}</td>
+                        <td>{result.Q3 || "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="no-data">
+                Brak danych do wyświetlenia dla wybranej rundy
+              </div>
+            )}
+          </div>
+        );
+
+      case "sprint_results":
+        return (
+          <div className="results-container">
+            <h2>Wyniki wyścigów sezonu 2025</h2>
+
+            <div className="filter-section">
+              <label htmlFor="round-select">Wybierz rundę:</label>
+              <select
+                id="round-select"
+                value={selectedRound}
+                onChange={(e) => setSelectedRound(e.target.value)}
+              >
+                <option value="">Wszystkie rundy</option>
+                {[...Array(23)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Runda {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {data && data.length > 0 ? (
+              <div className="results-table-container">
+                <table className="results-table">
+                  <thead>
+                    <tr>
+                      <th>Wyścig</th>
+                      <th>Pozycja</th>
+                      <th>Kierowca</th>
+                      <th>Konstruktor</th>
+                      <th>Czas</th>
+                      <th>Status</th>
+                      <th>Punkty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((result, index) => (
+                      <tr key={index}>
+                        <td>
+                          {result.raceName} (R{result.round})
+                          <div className="race-date">{result.date}</div>
+                        </td>
+                        <td className="position-cell">{result.position}</td>
+                        <td>
+                          <div className="driver-name">
+                            {result.Driver?.givenName}{" "}
+                            {result.Driver?.familyName}
+                          </div>
+                          <div className="driver-code">
+                            {result.Driver?.code}
+                          </div>
+                        </td>
+                        <td>{result.Constructor?.name}</td>
+                        <td>{result.Time?.time || "-"}</td>
+                        <td>{result.status}</td>
+                        <td className="points-cell">{result.points}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="no-data">
+                Brak danych do wyświetlenia dla wybranej rundy
+              </div>
+            )}
+          </div>
+        );
+
+      case "drivers_standing":
         return (
           <div className="chart-container">
             <h2>Punktacja kierowców</h2>
             <iframe
-              src="http://localhost:3000/d-solo/bekscsrvux4owc2/driverpoints1?orgId=1&from=1746278568531&to=1746300168531&timezone=browser&panelId=1&__feature.dashboardSceneSolohttp://localhost:3000/d-solo/bekscsrvux4owc2/driverpoints1?orgId=1&from=1746278711986&to=1746300311986&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo"
+              src="http://localhost:3000/d-solo/dekti7ijommm8c/driverstandings?orgId=1&from=1746297251440&to=1746318851440&timezone=browser&panelId=1&__feature.dashboardSceneSolo"
+              width="900"
+              height="400"
+              frameborder="0"
+            ></iframe>
+          </div>
+        );
+
+      case "constructors_standing":
+        return (
+          <div className="chart-container">
+            <h2>Punktacja konstuktorów</h2>
+            <iframe
+              src="http://localhost:3000/d-solo/aekthsw7wuebkd/constructorstandings?orgId=1&from=1746297214430&to=1746318814430&timezone=browser&panelId=1&__feature.dashboardSceneSolo"
               width="900"
               height="400"
               frameborder="0"
@@ -226,12 +388,27 @@ function App() {
           </li>
           <li className={activeTab === "results_2025" ? "active" : ""}>
             <button onClick={() => setActiveTab("results_2025")}>
-              Wyniki 2025
+              Wyniki wyścigów
             </button>
           </li>
-          <li className={activeTab === "result_chart" ? "active" : ""}>
-            <button onClick={() => setActiveTab("result_chart")}>
+          <li className={activeTab === "qualifying_results" ? "active" : ""}>
+            <button onClick={() => setActiveTab("qualifying_results")}>
+              Wyniki kwalifikacji
+            </button>
+          </li>
+          <li className={activeTab === "sprint_results" ? "active" : ""}>
+            <button onClick={() => setActiveTab("sprint_results")}>
+              Wyniki sprintów
+            </button>
+          </li>
+          <li className={activeTab === "drivers_standing" ? "active" : ""}>
+            <button onClick={() => setActiveTab("drivers_standing")}>
               Punkty kierowców
+            </button>
+          </li>
+          <li className={activeTab === "constructors_standing" ? "active" : ""}>
+            <button onClick={() => setActiveTab("constructors_standing")}>
+              Punkty konstuktorów
             </button>
           </li>
         </ul>

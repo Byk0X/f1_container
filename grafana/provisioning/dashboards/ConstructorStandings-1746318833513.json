@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -77,7 +77,7 @@
       "id": 1,
       "options": {
         "barRadius": 0,
-        "barWidth": 1,
+        "barWidth": 0.97,
         "fullHighlight": false,
         "groupWidth": 0.7,
         "legend": {
@@ -94,7 +94,6 @@
           "mode": "single",
           "sort": "none"
         },
-        "xField": "Driver",
         "xTickLabelRotation": -60,
         "xTickLabelSpacing": 0
       },
@@ -103,21 +102,14 @@
         {
           "columns": [
             {
+              "selector": "Constructor.name",
+              "text": "Name",
+              "type": "string"
+            },
+            {
               "selector": "points",
               "text": "points",
               "type": "number"
-            },
-            {
-              "selector": "Driver.driverId",
-              "text": "Driver",
-              "type": "string"
-            }
-          ],
-          "computed_columns": [
-            {
-              "selector": "",
-              "text": "",
-              "type": "string"
             }
           ],
           "datasource": {
@@ -131,55 +123,19 @@
           "refId": "A",
           "root_selector": "",
           "source": "url",
-          "summarizeBy": "",
-          "summarizeExpression": "",
           "type": "json",
-          "url": "http://172.17.0.1:8000/api/formula1/data?collection=results_2025",
+          "url": "http://172.17.0.1:8000/api/formula1/data?collection=constructor_standings",
           "url_options": {
-            "body_content_type": "text/plain",
-            "body_type": "raw",
             "data": "",
             "method": "GET"
           }
         }
       ],
-      "title": "Punktacja kierowców",
-      "transformations": [
-        {
-          "id": "groupBy",
-          "options": {
-            "fields": {
-              "Driver": {
-                "aggregations": [],
-                "operation": "groupby"
-              },
-              "points": {
-                "aggregations": [
-                  "sum"
-                ],
-                "operation": "aggregate"
-              }
-            }
-          }
-        },
-        {
-          "id": "sortBy",
-          "options": {
-            "fields": {},
-            "sort": [
-              {
-                "desc": true,
-                "field": "points (sum)"
-              }
-            ]
-          }
-        }
-      ],
+      "title": "Panel Title",
       "type": "barchart"
     }
   ],
   "preload": false,
-  "refresh": "5s",
   "schemaVersion": 41,
   "tags": [],
   "templating": {
@@ -191,7 +147,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "DriverPoints1",
-  "uid": "bekscsrvux4owc2",
-  "version": 3
+  "title": "ConstructorStandings",
+  "uid": "aekthsw7wuebkd",
+  "version": 1
 }

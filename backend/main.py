@@ -43,7 +43,7 @@ except Exception as e:
     raise
 
 
-# Zdefiniuj funkcję do regularnego odświeżania danych
+# Refresh data
 def refresh_data():
     logger.info("Rozpoczęto odświeżanie danych...")
     try:
@@ -70,16 +70,6 @@ def on_startup():
 @app.get("/")
 def read_root():
     return {"message": "F1 Data API działa!"}
-
-
-@app.get("/sessions", response_model=List[Dict[str, Any]])
-async def get_sessions():
-    try:
-        sessions = list(db.sessions.find({}, {"_id": 0}))
-        return sessions
-    except Exception as e:
-        logger.error(f"Błąd podczas pobierania danych o sesjach: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/results_2025", response_class=JSONResponse)

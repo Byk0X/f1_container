@@ -75,160 +75,235 @@ def fetch_f1_teams():
 
 
 def fetch_and_store_2025_results():
-    url = "https://api.jolpi.ca/ergast/f1/2025/results.json?limit=10000000"
-    print("Pobieranie wszystkich danych wyscigow 2025...")
-    response = requests.get(url)
-    if response.status_code != 200:
-        print("Błąd pobierania danych.")
-        return
-
-    data = response.json()
-    races = data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
-    if not races:
-        print("Brak danych wyścigów.")
-        return
-
+    base_url = "https://api.jolpi.ca/ergast/f1/2025/results.json"
+    limit = 100
+    offset = 0
+    total = None
     all_results = []
 
-    for race in races:
-        race_results = race.get("Results", [])
-        for result in race_results:
-            result["raceName"] = race["raceName"]
-            result["round"] = int(race["round"])
-            result["date"] = race["date"]
-            result["circuit"] = race["Circuit"]["circuitName"]
-            all_results.append(result)
+    print("Pobieranie wszystkich danych wyścigów 2025...")
 
-    db.results_2025.delete_many({})
-    db.results_2025.insert_many(all_results)
-    print(f"Zapisano {len(all_results)} wyników do kolekcji 'results_2025'.")
+    while True:
+        url = f"{base_url}?limit={limit}&offset={offset}"
+        response = requests.get(url)
+        if response.status_code != 200:
+            print(f"Błąd pobierania danych przy offset={offset}.")
+            break
+
+        data = response.json()
+        mrdata = data.get("MRData", {})
+        total = int(mrdata.get("total", 0))
+        races = mrdata.get("RaceTable", {}).get("Races", [])
+
+        if not races:
+            break
+
+        for race in races:
+            race_results = race.get("Results", [])
+            for result in race_results:
+                result["raceName"] = race["raceName"]
+                result["round"] = int(race["round"])
+                result["date"] = race["date"]
+                result["circuit"] = race["Circuit"]["circuitName"]
+                all_results.append(result)
+
+        offset += limit
+        if offset >= total:
+            break
+
+    if all_results:
+        db.results_2025.delete_many({})
+        db.results_2025.insert_many(all_results)
+        print(f"Zapisano {len(all_results)} wyników do kolekcji 'results_2025'.")
+    else:
+        print("Brak danych do zapisania.")
 
 
 def fetch_and_store_qualifying_results():
-    url = "https://api.jolpi.ca/ergast/f1/2025/qualifying.json?limit=10000000"
-    print("Pobieranie wszystkich danych z kwalifikacji 2025...")
-    response = requests.get(url)
-    if response.status_code != 200:
-        print("Błąd pobierania danych.")
-        return
-
-    data = response.json()
-    qualifications = data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
-    if not qualifications:
-        print("Brak danych wyścigów.")
-        return
-
+    base_url = "https://api.jolpi.ca/ergast/f1/2025/qualifying.json"
+    limit = 100
+    offset = 0
+    total = None
     all_results = []
 
-    for qualification in qualifications:
-        qualification_results = qualification.get("QualifyingResults", [])
-        for result in qualification_results:
-            result["raceName"] = qualification["raceName"]
-            result["round"] = int(qualification["round"])
-            result["date"] = qualification["date"]
-            result["circuit"] = qualification["Circuit"]["circuitName"]
-            all_results.append(result)
+    print("Pobieranie wszystkich danych z kwalifikacji 2025...")
 
-    db.qualifying_results.delete_many({})
-    db.qualifying_results.insert_many(all_results)
-    print(f"Zapisano {len(all_results)} wyników do kolekcji 'qualifying_results'.")
+    while True:
+        url = f"{base_url}?limit={limit}&offset={offset}"
+        response = requests.get(url)
+        if response.status_code != 200:
+            print(f"Błąd pobierania danych przy offset={offset}.")
+            break
+
+        data = response.json()
+        mrdata = data.get("MRData", {})
+        total = int(mrdata.get("total", 0))
+        races = mrdata.get("RaceTable", {}).get("Races", [])
+
+        if not races:
+            break
+
+        for qualification in races:
+            qualification_results = qualification.get("QualifyingResults", [])
+            for result in qualification_results:
+                result["raceName"] = qualification["raceName"]
+                result["round"] = int(qualification["round"])
+                result["date"] = qualification["date"]
+                result["circuit"] = qualification["Circuit"]["circuitName"]
+                all_results.append(result)
+
+        offset += limit
+        if offset >= total:
+            break
+
+    if all_results:
+        db.qualifying_results.delete_many({})
+        db.qualifying_results.insert_many(all_results)
+        print(f"Zapisano {len(all_results)} wyników do kolekcji 'qualifying_results'.")
+    else:
+        print("Brak danych do zapisania.")
 
 
 def fetch_and_store_sprint_results():
-    url = "https://api.jolpi.ca/ergast/f1/2025/sprint.json?limit=10000000"
-    print("Pobieranie wszystkich danych ze sprintów 2025...")
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        print("Błąd pobierania danych.")
-        return
-
-    data = response.json()
-    sprints = data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
-
-    if not sprints:
-        print("Brak danych wyścigów.")
-        return
-
+    base_url = "https://api.jolpi.ca/ergast/f1/2025/sprint.json"
+    limit = 100
+    offset = 0
+    total = None
     all_results = []
 
-    for sprint in sprints:
-        sprint_results = sprint.get("SprintResults", [])
-        for result in sprint_results:
-            result["raceName"] = sprint["raceName"]
-            result["round"] = int(sprint["round"])
-            result["date"] = sprint["date"]
-            result["circuit"] = sprint["Circuit"]["circuitName"]
-            all_results.append(result)
+    print("Pobieranie wszystkich danych ze sprintów 2025...")
 
-    db.sprint_results.delete_many({})
-    db.sprint_results.insert_many(all_results)
-    print(f"Zapisano {len(all_results)} wyników do kolekcji 'sprint_results'.")
+    while True:
+        url = f"{base_url}?limit={limit}&offset={offset}"
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            print(f"Błąd pobierania danych przy offset={offset}.")
+            break
+
+        data = response.json()
+        mrdata = data.get("MRData", {})
+        total = int(mrdata.get("total", 0))
+        races = mrdata.get("RaceTable", {}).get("Races", [])
+
+        if not races:
+            break
+
+        for sprint in races:
+            sprint_results = sprint.get("SprintResults", [])
+            for result in sprint_results:
+                result["raceName"] = sprint["raceName"]
+                result["round"] = int(sprint["round"])
+                result["date"] = sprint["date"]
+                result["circuit"] = sprint["Circuit"]["circuitName"]
+                all_results.append(result)
+
+        offset += limit
+        if offset >= total:
+            break
+
+    if all_results:
+        db.sprint_results.delete_many({})
+        db.sprint_results.insert_many(all_results)
+        print(f"Zapisano {len(all_results)} wyników do kolekcji 'sprint_results'.")
+    else:
+        print("Brak danych do zapisania.")
 
 
 def fetch_and_store_constructors_standings():
-    url = "https://api.jolpi.ca/ergast/f1/2025/constructorstandings.json?limit=10000000"
+    base_url = "https://api.jolpi.ca/ergast/f1/2025/constructorstandings.json"
+    limit = 100
+    offset = 0
+    total = None
+    all_standings = []
+
     print("Pobieranie danych klasyfikacji konstruktorów 2025...")
-    response = requests.get(url)
 
-    if response.status_code != 200:
+    while True:
+        url = f"{base_url}?limit={limit}&offset={offset}"
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            print(
+                f"Błąd pobierania danych przy offset={offset}: {response.status_code}"
+            )
+            break
+
+        data = response.json()
+        mrdata = data.get("MRData", {})
+        total = int(mrdata.get("total", 0))
+        standings_lists = mrdata.get("StandingsTable", {}).get("StandingsLists", [])
+
+        if not standings_lists:
+            break
+
+        for standings in standings_lists:
+            season = standings.get("season")
+            round_number = standings.get("round")
+            for standing in standings.get("ConstructorStandings", []):
+                standing["season"] = season
+                standing["round"] = round_number
+                all_standings.append(standing)
+
+        offset += limit
+        if offset >= total:
+            break
+
+    if all_standings:
+        db.constructor_standings.delete_many({})
+        db.constructor_standings.insert_many(all_standings)
         print(
-            f"Błąd pobierania danych klasyfikacji konstruktorów: {response.status_code}"
+            f"Zapisano {len(all_standings)} wyników do kolekcji 'constructor_standings'."
         )
-        return
-
-    data = response.json()
-    standings_lists = (
-        data.get("MRData", {}).get("StandingsTable", {}).get("StandingsLists", [])
-    )
-
-    if not standings_lists:
-        print("Brak danych klasyfikacji konstruktorów.")
-        return
-
-    latest_standings = standings_lists[-1]
-    constructor_standings = latest_standings.get("ConstructorStandings", [])
-
-    for standing in constructor_standings:
-        standing["season"] = latest_standings.get("season")
-        standing["round"] = latest_standings.get("round")
-
-    db.constructor_standings.delete_many({})
-    db.constructor_standings.insert_many(constructor_standings)
-    print(
-        f"Zapisano {len(constructor_standings)} wyników do kolekcji 'constructor_standings'."
-    )
+    else:
+        print("Brak danych do zapisania.")
 
 
 def fetch_and_store_driver_standings():
-    url = "https://api.jolpi.ca/ergast/f1/2025/driverstandings.json?limit=10000000"
+    base_url = "https://api.jolpi.ca/ergast/f1/2025/driverstandings.json"
+    limit = 100
+    offset = 0
+    total = None
+    all_standings = []
+
     print("Pobieranie danych klasyfikacji kierowców 2025...")
-    response = requests.get(url)
 
-    if response.status_code != 200:
-        print(f"Błąd pobierania danych klasyfikacji kierowców: {response.status_code}")
-        return
+    while True:
+        url = f"{base_url}?limit={limit}&offset={offset}"
+        response = requests.get(url)
 
-    data = response.json()
-    standings_lists = (
-        data.get("MRData", {}).get("StandingsTable", {}).get("StandingsLists", [])
-    )
+        if response.status_code != 200:
+            print(
+                f"Błąd pobierania danych przy offset={offset}: {response.status_code}"
+            )
+            break
 
-    if not standings_lists:
-        print("Brak danych klasyfikacji kierowców.")
-        return
+        data = response.json()
+        mrdata = data.get("MRData", {})
+        total = int(mrdata.get("total", 0))
+        standings_lists = mrdata.get("StandingsTable", {}).get("StandingsLists", [])
 
-    latest_standings = standings_lists[-1]
-    driver_standings = latest_standings.get("DriverStandings", [])
+        if not standings_lists:
+            break
 
-    for standing in driver_standings:
+        for standings in standings_lists:
+            season = standings.get("season")
+            round_number = standings.get("round")
+            for standing in standings.get("DriverStandings", []):
+                standing["season"] = season
+                standing["round"] = round_number
+                all_standings.append(standing)
 
-        standing["season"] = latest_standings.get("season")
-        standing["round"] = latest_standings.get("round")
+        offset += limit
+        if offset >= total:
+            break
 
-    db.driver_standings.delete_many({})
-    db.driver_standings.insert_many(driver_standings)
-    print(f"Zapisano {len(driver_standings)} wyników do kolekcji 'driver_standings'.")
+    if all_standings:
+        db.driver_standings.delete_many({})
+        db.driver_standings.insert_many(all_standings)
+        print(f"Zapisano {len(all_standings)} wyników do kolekcji 'driver_standings'.")
+    else:
+        print("Brak danych do zapisania.")
 
 
 def init_database():
